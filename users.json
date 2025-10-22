@@ -1,5 +1,0 @@
-{
-  "coach": { "password": "1234", "active": true },
-  "ahmad": { "password": "5678", "active": true },
-  "moh": { "password": "9999", "active": false }
-}
