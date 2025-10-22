@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>📅 متابعـة يومية للعميل</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --muted: #2b3138;
+    --text: #e6edf3;
+    --sub: #8b949e;
+    --ok: #4caf50;
+    --warn: #ffb74d;
+    --danger: #ef5350;
+    --primary: #1f6feb;
+    --gradient: linear-gradient(135deg, #1f6feb, #58a6ff);
+  }
+
+  * {
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto;
+  }
+
+  /* ====== Layout ====== */
+  .container {
+    max-width: 920px;
+    margin: auto;
+    padding: 22px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--muted);
+    border-radius: 18px;
+    padding: 20px 18px 22px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    margin-bottom: 18px;
+    position: relative;
+  }
+
+  .card:hover {
+    border-color: #30363d;
+    transform: translateY(-2px);
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    text-align: center;
+    font-size: 1.7rem;
+    background: var(--gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    margin: 0;
+    text-align: center;
+    color: var(--sub);
+    font-size: 0.95rem;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 720px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ====== Inputs ====== */
+  label.title {
+    display: block;
+    margin: 10px 0 6px;
+    color: #f0f0f0;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .field,
+  select,
+  textarea,
+  input[type="number"],
+  input[type="text"] {
+    width: 100%;
+    background: #1c2128;
+    color: #fff;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+  }
+
+  .field:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 6px rgba(31, 111, 235, 0.4);
+  }
+
+  textarea {
+    min-height: 84px;
+    resize: vertical;
+  }
+
+  /* ====== Yes/No chips ====== */
+  .yn {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    flex: 1 1 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #1c2128;
+    border: 1px solid #30363d;
+    border-radius: 14px;
+    padding: 12px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+  }
+
+  .chip input {
+    display: none;
+  }
+
+  .chip.ok {
+    border-color: rgba(76, 175, 80, 0.4);
+  }
+
+  .chip.no {
+    border-color: rgba(239, 83, 80, 0.4);
+  }
+
+  .chip:has(input:checked) {
+    background: var(--gradient);
+    color: #fff;
+    border-color: transparent;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(88, 166, 255, 0.5);
+    transform: scale(1.05);
+  }
+
+  /* ====== Buttons ====== */
+  .btn {
+    background: var(--ok);
+    border: none;
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.25s;
+  }
+
+  .btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+  }
+
+  .btn.sec {
+    background: var(--primary);
+  }
+
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid #30363d;
+    color: #e9e9e9;
+  }
+
+  .btn.warn {
+    background: var(--warn);
+  }
+
+  .btn.danger {
+    background: var(--danger);
+  }
+
+  /* ====== Water Progress ====== */
+  .progress {
+    height: 14px;
+    background: #1a1a1a;
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid #30363d;
+  }
+
+  .progress > div {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #4caf50, #7ef48d);
+    transition: width 0.35s ease;
+  }
+
+  .water-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1c2128;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .water-stats .big {
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+
+  /* ====== Table ====== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  th,
+  td {
+    border-bottom: 1px solid #2b2b2b;
+    padding: 12px 10px;
+    text-align: center;
+  }
+
+  th {
+    background: #1f242b;
+    color: #a9b3be;
+  }
+
+  tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #30363d;
+    background: #1c2128;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+  }
+
+  /* ====== Misc ====== */
+  .hint {
+    color: var(--sub);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .footer-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 6px;
+  }
+
+  .save-ind {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    color: #91ff9e;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+</style>
+
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="card" id="headerCard">
+      <h1>📅 صفحة المتابعـة اليومية</h1>
+      <p class="subtitle">اليوم: <span id="todayLabel"></span> • التاريخ: <span id="dateKey"></span></p>
+      <p class="subtitle" id="clientNameWrap" style="margin-top:6px">
+        <label style="margin-inline-start:6px">👤 اسم العميل (اختياري):</label>
+        <input id="clientName" class="field" placeholder="اكتب اسم العميل لربط الأسبوع" />
+      </p>
+      <div class="save-ind" id="saveInd" aria-live="polite" style="display:none">
+        ✅ تم الحفظ تلقائيًا
+      </div>
+    </div>
+
+    <!-- الالتزام بالوجبات -->
+    <div class="card">
+      <label class="title">🍽️ هل التزمت بكميات وأوزان الأكل المحددة اليوم؟</label>
+      <div class="yn" data-group="meals_ok">
+        <label class="chip ok"><input type="radio" name="meals_ok" value="نعم"><span>✅ نعم</span></label>
+        <label class="chip no"><input type="radio" name="meals_ok" value="لا"><span>❌ لا</span></label>
+      </div>
+      <div id="meals_reason_wrap" class="hidden">
+        <label class="title" style="margin-top:10px">🤔 سبب عدم الالتزام</label>
+        <textarea id="meals_reason" placeholder="مثال: سفر / وجبة خارجية / ما توفر الأكل"></textarea>
+      </div>
+    </div>
+
+    <!-- الماء -->
+    <div class="card">
+      <label class="title">💧 شرب الماء اليوم</label>
+      <div class="water-box">
+        <div class="row">
+          <div class="water-stats">
+            <div>
+              <div class="hint">الكمية الحالية</div>
+              <div class="big" id="waterLiters">0.00 لتر</div>
+            </div>
+            <div>
+              <div class="hint">الهدف اليومي</div>
+              <select id="waterGoal" class="field">
+
+                  <option value="2000">2.0 لتر</option>
+                  <option value="2500">2.5 لتر</option>
+                  <option value="3000" selected>3.0 لتر</option>
+                  <option value="3500">3.5 لتر</option>
+                  <option value="4000">4.0 لتر</option>
+                  <option value="5000">5.0 لتر</option>
+                  <option value="6000">6.0 لتر</option>
+                  <option value="7000">7.0 لتر</option>
+                  <option value="8000">8.0 لتر</option>
+                </select>
+
+              </select>
+            </div>
+          </div>
+          <div class="water-actions">
+            <button class="btn" data-add="250">+ كوب 250ml</button>
+            <button class="btn" data-add="300">+ 300ml</button>
+            <button class="btn" data-add="500">+ 500ml</button>
+            <input id="customMl" class="field" inputmode="numeric" placeholder="إضافة كمية مخصصة (ml)" style="flex:1 1 160px">
+            <button class="btn sec" id="addCustom">إضافة</button>
+            <button class="btn ghost" id="undoWater">↩︎ تراجع</button>
+            <button class="btn warn" id="resetWater">إعادة تعيين</button>
+          </div>
+        </div>
+        <div class="progress" aria-label="نسبة الإنجاز"><div id="waterBar"></div></div>
+        <div class="hint">✅ تقدر تضيف على دفعات طول اليوم. كل تغيير محفوظ تلقائيًا.</div>
+      </div>
+    </div>
+
+    <!-- الكارديو -->
+    <div class="card">
+      <label class="title">🏃‍♂️ هل التزمت بالكارديو المحدد اليوم؟</label>
+      <div class="yn" data-group="cardio_ok">
+        <label class="chip ok"><input type="radio" name="cardio_ok" value="نعم"><span>✅ نعم</span></label>
+        <label class="chip no"><input type="radio" name="cardio_ok" value="لا"><span>❌ لا</span></label>
+      </div>
+      <div id="cardio_more" class="hidden">
+        <label class="title" for="cardio_mins">⏱️ مدة الكارديو (دقائق)</label>
+        <input id="cardio_mins" type="number" min="0" class="field" placeholder="مثال: 30">
+      </div>
+      <div id="cardio_reason_wrap" class="hidden">
+        <label class="title">🤔 سبب عدم الالتزام</label>
+        <textarea id="cardio_reason" placeholder="اكتب السبب باختصار"></textarea>
+      </div>
+    </div>
+
+    <!-- التمرين -->
+    <div class="card">
+      <label class="title">🏋️‍♂️ هل نفذت تمرينك اليوم؟</label>
+      <div class="yn" data-group="train_ok">
+        <label class="chip ok"><input type="radio" name="train_ok" value="نعم"><span>✅ نعم</span></label>
+        <label class="chip no"><input type="radio" name="train_ok" value="لا"><span>❌ لا</span></label>
+      </div>
+      <div id="train_more" class="hidden">
+        <div class="row">
+          <div>
+            <label class="title" for="train_rate">📈 تقييم الأداء (1–10)</label>
+            <input id="train_rate" type="number" min="1" max="10" class="field" placeholder="مثال: 8">
+          </div>
+          <div>
+            <label class="title" for="train_note">📝 ملاحظات التمرين</label>
+            <input id="train_note" class="field" placeholder="اختياري: كيف كان شعورك بالتمرين؟">
+          </div>
+        </div>
+      </div>
+      <div id="train_reason_wrap" class="hidden">
+        <label class="title">🤔 سبب عدم التمرين</label>
+        <textarea id="train_reason" placeholder="اكتب السبب باختصار"></textarea>
+      </div>
+    </div>
+
+    <!-- المكملات -->
+    <div class="card">
+      <label class="title">💊 هل أخذت مكملاتك اليوم؟</label>
+      <div class="yn" data-group="supp_ok">
+        <label class="chip ok"><input type="radio" name="supp_ok" value="نعم"><span>✅ نعم</span></label>
+        <label class="chip no"><input type="radio" name="supp_ok" value="لا"><span>❌ لا</span></label>
+      </div>
+      <div id="supp_reason_wrap" class="hidden">
+        <label class="title">🤔 سبب عدم أخذ المكمل</label>
+        <textarea id="supp_reason" placeholder="اكتب السبب باختصار"></textarea>
+      </div>
+    </div>
+
+
+    <!-- النوم والوزن -->
+    <div class="card">
+      <div class="row">
+        <div>
+          <label class="title" for="sleep_hours">😴 ساعات النوم (الليلة الماضية)</label>
+          <input id="sleep_hours" type="number" min="0" step="0.5" class="field" placeholder="مثال: 7.5">
+        </div>
+        <div>
+          <label class="title" for="weight">⚖️ الوزن اليومي (كغ)</label>
+          <input id="weight" type="number" min="0" step="0.1" class="field" placeholder="مثال: 78.4">
+        </div>
+      </div>
+    </div>
+
+  <!-- الملاحظات فقط -->
+  <div class="card">
+    <label class="title" for="notes" style="margin-top:10px">📝 ملاحظات اليوم</label>
+    <textarea id="notes" placeholder="أي شيء إضافي مهم اليوم"></textarea>
+  </div>
+
+    <!-- أزرار أسبوع / نسخ -->
+    <div class="card">
+      <div class="footer-actions">
+        <button class="btn sec" id="showWeek">📅 عرض ملخص الأسبوع</button>
+        <button class="btn ghost" id="copyWeek">📋 نسخ تقرير أسبوعي</button>
+        <button class="btn danger" id="resetWeek">🧹 إعادة ضبط بيانات الأسبوع</button>
+      </div>
+      <p class="hint" style="text-align:center;margin-top:10px">كل إدخال يتم حفظه تلقائيًا حسب التاريخ. بإمكانك العودة في أي وقت دون فقدان البيانات.</p>
+    </div>
+
+    <!-- ملخص الأسبوع -->
+    <div class="card hidden" id="weekCard">
+      <h2 style="margin:0 0 12px;text-align:center">📊 ملخص الأسبوع</h2>
+      <div class="hint" id="weekRange" style="text-align:center;margin-bottom:10px"></div>
+      <div class="badge" id="weekClientBadge" style="justify-content:center;margin-bottom:10px"></div>
+      <div class="table-wrap">
+        <table id="weekTable">
+          <thead>
+            <tr>
+              <th>اليوم</th>
+              <th>الوجبات</th>
+              <th>الماء</th>
+              <th>الكارديو</th>
+              <th>التمرين</th>
+              <th>المكملات</th>
+              <th>النوم</th>
+              <th>الوزن</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+  // ===== Helpers =====
+  const pad = n => String(n).padStart(2,'0');
+  const toDateKey = (d=new Date()) => {
+    // حفظ بالتاريخ المحلي (بدون توقيت)
+    const y = d.getFullYear();
+    const m = pad(d.getMonth()+1);
+    const day = pad(d.getDate());
+    return `${y}-${m}-${day}`;
+  }
+  const prettyDate = (d) => d.toLocaleDateString('ar', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  const STORAGE_KEY='dt-entries-v1';
+  const readAll=()=> JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+  const writeAll=(obj)=> localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+
+  const today = new Date();
+  const TODAY_KEY = toDateKey(today);
+
+  // DOM refs
+  const refs = {
+    clientName: document.getElementById('clientName'),
+    todayLabel: document.getElementById('todayLabel'),
+    dateKey: document.getElementById('dateKey'),
+    saveInd: document.getElementById('saveInd'),
+
+    meals_ok: document.querySelectorAll('input[name="meals_ok"]'),
+    meals_reason_wrap: document.getElementById('meals_reason_wrap'),
+    meals_reason: document.getElementById('meals_reason'),
+
+    waterLiters: document.getElementById('waterLiters'),
+    waterBar: document.getElementById('waterBar'),
+    waterGoal: document.getElementById('waterGoal'),
+    addBtns: document.querySelectorAll('[data-add]'),
+    customMl: document.getElementById('customMl'),
+    addCustom: document.getElementById('addCustom'),
+    resetWater: document.getElementById('resetWater'),
+    undoWater: document.getElementById('undoWater'),
+
+    cardio_ok: document.querySelectorAll('input[name="cardio_ok"]'),
+    cardio_more: document.getElementById('cardio_more'),
+    cardio_mins: document.getElementById('cardio_mins'),
+    cardio_reason_wrap: document.getElementById('cardio_reason_wrap'),
+    cardio_reason: document.getElementById('cardio_reason'),
+
+    train_ok: document.querySelectorAll('input[name="train_ok"]'),
+    train_more: document.getElementById('train_more'),
+    train_rate: document.getElementById('train_rate'),
+    train_note: document.getElementById('train_note'),
+    train_reason_wrap: document.getElementById('train_reason_wrap'),
+    train_reason: document.getElementById('train_reason'),
+
+    supp_ok: document.querySelectorAll('input[name="supp_ok"]'),
+    supp_more: document.getElementById('supp_more'),
+    supp_list: document.getElementById('supp_list'),
+    supp_reason_wrap: document.getElementById('supp_reason_wrap'),
+    supp_reason: document.getElementById('supp_reason'),
+
+    sleep_hours: document.getElementById('sleep_hours'),
+    weight: document.getElementById('weight'),
+
+
+    notes: document.getElementById('notes'),
+
+    showWeek: document.getElementById('showWeek'),
+    copyWeek: document.getElementById('copyWeek'),
+    resetWeek: document.getElementById('resetWeek'),
+
+    weekCard: document.getElementById('weekCard'),
+    weekTableBody: document.querySelector('#weekTable tbody'),
+    weekRange: document.getElementById('weekRange'),
+    weekClientBadge: document.getElementById('weekClientBadge')
+  };
+
+  // ===== State =====
+  let entries = readAll();
+  if(!entries[TODAY_KEY]) entries[TODAY_KEY] = defaultEntry();
+  let waterUndoStack = []; // for undo
+
+function defaultEntry(){
+  return {
+    clientName: '',
+    meals_ok: '', meals_reason:'',
+    water_ml: 0, water_goal: 3000,
+    cardio_ok:'', cardio_mins:'', cardio_reason:'',
+    train_ok:'', train_rate:'', train_note:'', train_reason:'',
+    supp_ok:'', supp_reason:'',
+    sleep_hours:'', weight:'',
+    notes:''
+  }
+}
+
+
+  function showSaved(){
+    refs.saveInd.style.display='block';
+    clearTimeout(showSaved._t); showSaved._t=setTimeout(()=>{refs.saveInd.style.display='none'}, 1200);
+  }
+
+  function save(){
+    writeAll(entries); showSaved();
+  }
+
+  // ===== UI init =====
+  refs.todayLabel.textContent = prettyDate(today);
+  refs.dateKey.textContent = TODAY_KEY;
+
+  // load today's entry
+  function loadToday(){
+    const e = entries[TODAY_KEY] || defaultEntry();
+    // client name
+    refs.clientName.value = e.clientName || '';
+
+    // meals
+    checkRadio('meals_ok', e.meals_ok);
+    refs.meals_reason.value = e.meals_reason || '';
+    toggle(refs.meals_reason_wrap, e.meals_ok==='لا');
+
+    // water
+    refs.waterGoal.value = String(e.water_goal||3000);
+    updateWaterUI(e.water_ml || 0);
+
+    // cardio
+    checkRadio('cardio_ok', e.cardio_ok);
+    refs.cardio_mins.value = e.cardio_mins || '';
+    refs.cardio_reason.value = e.cardio_reason || '';
+    toggle(refs.cardio_more, e.cardio_ok==='نعم');
+    toggle(refs.cardio_reason_wrap, e.cardio_ok==='لا');
+
+    // train
+    checkRadio('train_ok', e.train_ok);
+    refs.train_rate.value = e.train_rate || '';
+    refs.train_note.value = e.train_note || '';
+    refs.train_reason.value = e.train_reason || '';
+    toggle(refs.train_more, e.train_ok==='نعم');
+    toggle(refs.train_reason_wrap, e.train_ok==='لا');
+
+    // supp
+    checkRadio('supp_ok', e.supp_ok);
+    toggle(refs.supp_more, e.supp_ok==='نعم');
+    toggle(refs.supp_reason_wrap, e.supp_ok==='لا');
+    // set checked supplements
+    [...refs.supp_list.querySelectorAll('input[type="checkbox"]')].forEach(c=>{
+      c.checked = (e.supp_list||[]).includes(c.value);
+    })
+
+    // sleep weight
+    refs.sleep_hours.value = e.sleep_hours || '';
+    refs.weight.value = e.weight || '';
+
+
+
+    // notes
+    refs.notes.value = e.notes || '';
+  }
+
+  function toggle(el, show){ el.classList[show? 'remove':'add']('hidden'); }
+  function checkRadio(name, val){
+    const radios = document.querySelectorAll(`input[name="${name}"]`);
+    radios.forEach(r=>{ r.checked = (r.value===val); });
+  }
+
+  function getToday(){ return entries[TODAY_KEY] || (entries[TODAY_KEY]=defaultEntry()); }
+
+  function updateWaterUI(ml){
+    const goal = +refs.waterGoal.value || 3000;
+    const liters = (ml/1000).toFixed(2);
+    refs.waterLiters.textContent = `${liters} لتر`;
+    const pct = Math.min(100, Math.round((ml/goal)*100));
+    refs.waterBar.style.width = pct + '%';
+  }
+
+  // ===== Event bindings & autosave =====
+  function bindYN(group, onChange){
+    document.querySelectorAll(`[data-group="${group}"] input[type=radio]`).forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const e = getToday();
+        e[group] = r.value;
+        onChange && onChange(r.value, e);
+        save();
+      });
+    });
+  }
+
+  refs.clientName.addEventListener('input',()=>{ getToday().clientName = refs.clientName.value.trim(); save(); });
+
+  // meals
+  bindYN('meals_ok', (v)=>{ toggle(refs.meals_reason_wrap, v==='لا'); });
+  refs.meals_reason.addEventListener('input',()=>{ getToday().meals_reason = refs.meals_reason.value.trim(); save(); });
+
+  // water buttons
+  refs.addBtns.forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const add = +btn.dataset.add;
+      const e = getToday();
+      waterUndoStack.push(e.water_ml||0);
+      e.water_ml = (e.water_ml||0) + add;
+      updateWaterUI(e.water_ml); save();
+    })
+  });
+  refs.addCustom.addEventListener('click',()=>{
+    const val = parseInt(refs.customMl.value||'0',10);
+    if(!isNaN(val) && val>0){
+      const e = getToday();
+      waterUndoStack.push(e.water_ml||0);
+      e.water_ml = (e.water_ml||0) + val;
+      updateWaterUI(e.water_ml); save();
+      refs.customMl.value='';
+    }
+  });
+  refs.undoWater.addEventListener('click',()=>{
+    if(waterUndoStack.length){
+      const prev = waterUndoStack.pop();
+      const e = getToday(); e.water_ml = prev; updateWaterUI(e.water_ml); save();
+    }
+  });
+  refs.resetWater.addEventListener('click',()=>{
+    if(confirm('هل تريد تصفير عداد الماء لهذا اليوم؟')){
+      const e = getToday(); e.water_ml = 0; waterUndoStack=[]; updateWaterUI(0); save();
+    }
+  });
+  refs.waterGoal.addEventListener('change',()=>{ getToday().water_goal = +refs.waterGoal.value; updateWaterUI(getToday().water_ml||0); save(); })
+
+  // cardio
+  bindYN('cardio_ok', (v)=>{ toggle(refs.cardio_more, v==='نعم'); toggle(refs.cardio_reason_wrap, v==='لا'); });
+  refs.cardio_mins.addEventListener('input',()=>{ getToday().cardio_mins = refs.cardio_mins.value; save(); });
+  refs.cardio_reason.addEventListener('input',()=>{ getToday().cardio_reason = refs.cardio_reason.value.trim(); save(); });
+
+  // train
+  bindYN('train_ok', (v)=>{ toggle(refs.train_more, v==='نعم'); toggle(refs.train_reason_wrap, v==='لا'); });
+  refs.train_rate.addEventListener('input',()=>{ const v=refs.train_rate.value; getToday().train_rate = v; save(); });
+  refs.train_note.addEventListener('input',()=>{ getToday().train_note = refs.train_note.value.trim(); save(); });
+  refs.train_reason.addEventListener('input',()=>{ getToday().train_reason = refs.train_reason.value.trim(); save(); });
+
+  // supp
+  bindYN('supp_ok', (v)=>{ toggle(refs.supp_more, v==='نعم'); toggle(refs.supp_reason_wrap, v==='لا'); });
+
+  refs.supp_reason.addEventListener('input',()=>{ getToday().supp_reason = refs.supp_reason.value.trim(); save(); });
+
+  // sleep & weight
+  refs.sleep_hours.addEventListener('input',()=>{ getToday().sleep_hours = refs.sleep_hours.value; save(); });
+  refs.weight.addEventListener('input',()=>{ getToday().weight = refs.weight.value; save(); });
+
+  // notes فقط
+  refs.notes.addEventListener('input',()=>{ getToday().notes = refs.notes.value.trim(); save(); });
+
+
+  // ===== Weekly summary =====
+  function getLast7Keys(){
+    const arr=[]; const d=new Date();
+    for(let i=0;i<7;i++){
+      const di = new Date(d.getFullYear(), d.getMonth(), d.getDate()-i);
+      arr.push({key: toDateKey(di), date: di});
+    }
+    return arr.reverse();
+  }
+
+function weekSummaryText(keys){
+  const eAll = readAll();
+  const lines = [];
+  const name = (eAll[TODAY_KEY]?.clientName || '').trim();
+  lines.push(`📊 تقرير أسبوعي${name?` — ${name}`:''}`);
+  lines.push('');
+
+  keys.forEach(({key, date})=>{
+    const e = eAll[key] || {};
+    const dayTitle = date.toLocaleDateString('ar', { weekday:'long', month:'short', day:'numeric' });
+    const waterL = ((e.water_ml||0)/1000).toFixed(2);
+
+    // ✅ تعديل قسم المكملات ليكون بسيط وواضح
+    const supp = e.supp_ok === 'نعم'
+      ? '✅ تم أخذ المكمل'
+      : (e.supp_ok === 'لا'
+          ? (e.supp_reason ? `❌ لم يؤخذ (${e.supp_reason})` : '❌ لم يؤخذ')
+          : '—');
+
+    lines.push(`— ${dayTitle} (${key})`);
+    lines.push(`  • الوجبات: ${e.meals_ok||'—'}${e.meals_ok==='لا'&&e.meals_reason?` — السبب: ${e.meals_reason}`:''}`);
+    lines.push(`  • الماء: ${waterL} لتر من هدف ${(e.water_goal||3000)/1000} لتر`);
+    lines.push(`  • الكارديو: ${e.cardio_ok||'—'}${e.cardio_ok==='نعم'&&e.cardio_mins?` (${e.cardio_mins} د)`:''}${e.cardio_ok==='لا'&&e.cardio_reason?` — السبب: ${e.cardio_reason}`:''}`);
+    lines.push(`  • التمرين: ${e.train_ok||'—'}${e.train_ok==='نعم'&&e.train_rate?` — تقييم ${e.train_rate}/10`:''}${e.train_ok==='لا'&&e.train_reason?` — السبب: ${e.train_reason}`:''}`);
+
+    // ✅ هذا السطر هو الجديد والصحيح
+    lines.push(`  • المكملات: ${supp}`);
+
+    lines.push(`  • النوم: ${e.sleep_hours?`${e.sleep_hours} س`:'—'}`);
+    lines.push(`  • الوزن: ${e.weight?`${e.weight} كغ`:'—'}`);
+    if(e.notes) lines.push(`  • ملاحظات: ${e.notes}`);
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+
+  function renderWeek(){
+    const keys = getLast7Keys();
+    const eAll = readAll();
+
+    // header
+    const first = keys[0].date, last = keys[keys.length-1].date;
+    refs.weekRange.textContent = `من ${first.toLocaleDateString('ar',{month:'long',day:'numeric'})} إلى ${last.toLocaleDateString('ar',{month:'long',day:'numeric'})}`;
+
+    const name = (eAll[TODAY_KEY]?.clientName || '').trim();
+    refs.weekClientBadge.textContent = name? `👤 ${name}` : '';
+    refs.weekClientBadge.style.display = name? 'inline-flex':'none';
+
+    // table
+    refs.weekTableBody.innerHTML='';
+    keys.forEach(({key, date})=>{
+      const e = eAll[key] || {};
+      const tr = document.createElement('tr');
+      const dayName = date.toLocaleDateString('ar', { weekday:'short' });
+      const water = ((e.water_ml||0)/1000).toFixed(2)+ ' لتر';
+      const supp = e.supp_ok === 'نعم'
+        ? '✅ نعم'
+        : (e.supp_ok === 'لا'
+            ? (e.supp_reason ? `❌ لا (${e.supp_reason})` : '❌ لا')
+            : '—');
+
+      tr.innerHTML = `
+        <td><div class="badge">${dayName} <span style="opacity:.65">${key}</span></div></td>
+        <td>${e.meals_ok||'—'}</td>
+        <td>${water}</td>
+        <td>${e.cardio_ok||'—'} ${e.cardio_ok==='نعم'&&e.cardio_mins?`(${e.cardio_mins} د)`:''}</td>
+        <td>${e.train_ok||'—'} ${e.train_ok==='نعم'&&e.train_rate?`(${e.train_rate}/10)`:''}</td>
+        <td>${supp}</td>
+        <td>${e.sleep_hours||'—'} س</td>
+        <td>${e.weight||'—'} كغ</td>
+      `;
+
+      refs.weekTableBody.appendChild(tr);
+    });
+
+    toggle(refs.weekCard, true);
+  }
+
+  refs.showWeek.addEventListener('click', ()=>{ renderWeek(); window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'}); });
+
+  refs.copyWeek.addEventListener('click', async ()=>{
+    const txt = weekSummaryText(getLast7Keys());
+    try{ await navigator.clipboard.writeText(txt); alert('✅ تم نسخ التقرير الأسبوعي — يمكنك لصقه الآن'); }
+    catch{
+      const ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.focus(); ta.select();
+      try{ document.execCommand('copy'); alert('✅ تم نسخ التقرير الأسبوعي'); }catch{ alert('يرجى تحديد النص ونسخه يدويًا'); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  refs.resetWeek.addEventListener('click',()=>{
+    if(confirm('تنبيه: سيؤدي هذا لمسح بيانات آخر 7 أيام لهذا العميل على هذا الجهاز. متابعة؟')){
+      const all = readAll();
+      getLast7Keys().forEach(({key})=>{ delete all[key]; });
+      writeAll(all); entries = all; if(!entries[TODAY_KEY]) entries[TODAY_KEY]=defaultEntry(); loadToday(); toggle(refs.weekCard,false); showSaved();
+    }
+  })
+
+  // init
+  loadToday();
+  </script>
+</body>
+</html>
